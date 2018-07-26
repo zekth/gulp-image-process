@@ -1,17 +1,18 @@
-const imageProcess = require('./src/index')
+const imageProcess = require('./index.js')
 const gulp = require('gulp')
 const path = require('path')
 
 gulp.task('images', () => {
   let imageFolder = path.resolve('test', 'ressources', 'src', '*.jpg')
-  gulp
+  return gulp
     .src(imageFolder)
     .pipe(
       imageProcess({
+        quality:100,
         verboseLogging: true,
         width:200,
         heigth:200,
-        keepRatio:false,
+        ignoreRatio:false,
         watermark: {
           filePath: 'test/ressources/src/watermark.png',
           position: 'north',

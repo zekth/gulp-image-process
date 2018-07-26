@@ -1,0 +1,6 @@
+test
+.prettierrc
+.editorconfig
+gulpfile.js
+package-lock.json
+node_modules

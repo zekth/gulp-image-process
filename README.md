@@ -1,10 +1,18 @@
 # gulp-image-process
-Gulp task for processing images
+
+A Gulp task for processing images base on [sharp](https://github.com/lovell/sharp) for its speed, features and easiness of deployement.
+
+## Installation
+
+```
+  npm install gulp gulp-image-process --save-dev
+```
 
 ## Usage
 
 ```javascript
-const imageProcess = require('./src/index')
+'use strict'
+const imageProcess = require('gulp-image-process')
 const gulp = require('gulp')
 const path = require('path')
 
@@ -52,6 +60,12 @@ Default: `false`
 
 Keep the EXIF file on the output file.
 
+### options.ignoreRatio
+Type: `Boolean`<br>
+Default: `false`
+
+While resizing it will ignore the base ratio of the image with a crop.
+
 #### options.watermark
 Type: `Object`<br>
 Default: `null`
@@ -82,6 +96,18 @@ Possible values:
   southeast
 ```
 
+Little reminder:
+```
+northwest   north     northeast
+        \     |     /
+          \   |   /
+east   ---- center ----   west
+          /   |   \
+        /     |     \
+southwest   south     southeast
+
+```
+
 ##### options.watermark.maxSize
 Type: `Number`<br>
 Default: `-1`<br>
@@ -97,7 +123,8 @@ Margin of the watermark from the border of the image. Applied to all coordinates
 
 ## TODO
 
-- Optimize output
+- WebP support
+- Optimization prompt (diff input / ouput size)
 
 ## License
 
