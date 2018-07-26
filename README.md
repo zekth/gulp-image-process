@@ -15,6 +15,9 @@ gulp.task('images', () => {
     .pipe(
       imageProcess({
         verboseLogging: true,
+        width:200,
+        heigth:200,
+        keepRatio:false,
         watermark: {
           filePath: 'test/ressources/src/watermark.png',
           position: 'north',
@@ -95,8 +98,6 @@ Margin of the watermark from the border of the image. Applied to all coordinates
 ## TODO
 
 - Optimize output
-- manage resize
-- tinypng implementation
 
 ## License
 

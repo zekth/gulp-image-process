@@ -40,7 +40,9 @@ module.exports = function(param) {
 
   let parameters = {}
   parameters.watermark = param.watermark || false
-  parameters.optimize = param.optimize || false
+  parameters.keepRatio = param.keepRatio
+  parameters.width = param.width || null
+  parameters.heigth = param.heigth || null
   parameters.keepMetadata = param.keepMetadata || false
   parameters.quality = param.quality || 100
   parameters.watermark.maxSize = param.watermark.maxSize || -1
@@ -109,7 +111,7 @@ module.exports = function(param) {
         case WATERMARK_POSITION.center:
           xComposite = imageMetadata.width / 2 - xOffset
           yComposite = imageMetadata.height / 2 - yOffset
-        break
+          break
         case WATERMARK_POSITION.northwest:
           xComposite = 0 + margin
           yComposite = 0 + margin
@@ -135,7 +137,7 @@ module.exports = function(param) {
           xComposite = imageMetadata.width - watermarkMetadata.width - margin
           break
       }
-      verboseLog(xOffset,yOffset,xComposite,yComposite)
+      verboseLog(xOffset, yOffset, xComposite, yComposite)
       return [Math.round(xComposite), Math.round(yComposite)]
     }
     imageMetadata = await image.metadata()
@@ -145,14 +147,12 @@ module.exports = function(param) {
       waterMark = processWatermarkResize(waterMark)
     }
     watermarkMetadata = await sharp(await waterMark.toBuffer()).metadata()
-    let waterMarkCoordinates = getCompositeCoordinates(
-      parameters.watermark.position,
-      parameters.watermark.margin
-    )
+    let waterMarkCoordinates = getCompositeCoordinates(parameters.watermark.position, parameters.watermark.margin)
     if (verbose) {
       verboseLog(`xComposite:${waterMarkCoordinates[0]}, yComposite:${waterMarkCoordinates[1]}`)
     }
     image.overlayWith(await waterMark.toBuffer(), { left: waterMarkCoordinates[0], top: waterMarkCoordinates[1] })
+    return await sharp(await image.toBuffer())
   }
 
   let imageProcess = async (file, enc, cb) => {
@@ -182,7 +182,15 @@ module.exports = function(param) {
       if (!fs.existsSync(parameters.watermark.filePath)) {
         throw new PluginError(TASK_NAME, 'Watermark file not found!')
       }
-      await processWatermark(img, parameters)
+      img = await processWatermark(img, parameters)
+    }
+    if (parameters.width || parameters.heigth) {
+      verboseLog(`Resizing to ${parameters.width}x${parameters.heigth}`)
+      img.resize(parameters.width, parameters.heigth)
+    }
+    if (parameters.keepRatio) {
+      verboseLog(`Keeping Image Ratio`)
+      img.max()
     }
     img.toBuffer().then((data, info) => {
       file.contents = data
