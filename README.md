@@ -30,11 +30,23 @@ gulp.task('watermark', () => {
 
 ### options
 
+##### options.quality
+Type: `Number`<br>
+Default: `100`<br>
+
+Quality of the output image. From 0 to 100.
+
 #### options.verboseLogging
 Type: `Boolean`<br>
 Default: `false`
 
 Enable the verbose logging.
+
+### options.keepMetadata
+Type: `Boolean`<br>
+Default: `false`
+
+Keep the EXIF file on the output file.
 
 #### options.watermark
 Type: `Object`<br>
@@ -56,14 +68,14 @@ Position of the watermark on the image.<br>
 Possible values:
 ```
   center
-  centerTop
-  centerBottom
-  centerLeft
-  centerRight
-  upperLeft
-  upperRight
-  downLeft
-  downRigth
+  north
+  south
+  west
+  east
+  northwest
+  northeast
+  southwest
+  southeast
 ```
 
 ##### options.watermark.maxSize
@@ -81,7 +93,6 @@ Margin of the watermark from the border of the image. Applied to all coordinates
 
 ## TODO
 
-- keep exif datas
 - Optimize output
 - manage resize
 - tinypng implementation

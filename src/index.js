@@ -1,8 +1,8 @@
 'use strict'
 const through = require('through2')
 const path = require('path')
+const sharp = require('sharp')
 const fs = require('fs')
-const jimp = require('jimp')
 const chalk = require('chalk')
 const log = require('fancy-log')
 const PluginError = require('plugin-error')
@@ -11,19 +11,19 @@ const supportedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']
 const TASK_NAME = 'gulp-image-process'
 const WATERMARK_POSITION = {
   center: 'center',
-  centerTop: 'centerTop',
-  centerBottom: 'centerBottom',
-  centerLeft: 'centerLeft',
-  centerRight: 'centerRight',
-  upperLeft: 'upperLeft',
-  upperRight: 'upperRight',
-  downLeft: 'downLeft',
-  downRigth: 'downRight'
+  north: 'north',
+  south: 'south',
+  west: 'west',
+  east: 'east',
+  northwest: 'northwest',
+  northeast: 'northeast',
+  southwest: 'southwest',
+  southeast: 'southeast'
 }
 let verbose = false
 let verboseLog = (...Args) => {
   if (verbose) {
-    log(Args)
+    log(...Args)
   }
 }
 module.exports.watermarkPosition = WATERMARK_POSITION
@@ -41,6 +41,8 @@ module.exports = function(param) {
   let parameters = {}
   parameters.watermark = param.watermark || false
   parameters.optimize = param.optimize || false
+  parameters.keepMetadata = param.keepMetadata || false
+  parameters.quality = param.quality || 100
   parameters.watermark.maxSize = param.watermark.maxSize || -1
   verboseLog('Parameters', parameters)
 
@@ -60,6 +62,8 @@ module.exports = function(param) {
     }
   }
   let processWatermark = async image => {
+    let imageMetadata
+    let watermarkMetadata
     let getRatio = (maxSize, actualSize) => {
       let ratio = (maxSize / actualSize).toFixed(2)
       verboseLog(`Watermark resize with ratio:${ratio}`)
@@ -71,88 +75,90 @@ module.exports = function(param) {
       return maxSize
     }
     let processWatermarkResize = watermark => {
-      verboseLog(`Watermark size: width:${watermark.bitmap.width} height:${watermark.bitmap.height}`)
-      let widthIsMax = watermark.bitmap.width > watermark.bitmap.height
+      verboseLog(`Watermark size: width:${watermarkMetadata.width} height:${watermarkMetadata.height}`)
+      let widthIsMax = watermarkMetadata.width > watermarkMetadata.height
       if (widthIsMax) {
-        let maxWidth = getMaxSize(image.bitmap.width, parameters.watermark.maxSize)
-        if (watermark.bitmap.width > maxWidth) {
-          watermark.resize(Math.round(getRatio(maxWidth, watermark.bitmap.width) * watermark.bitmap.width), jimp.AUTO)
+        let maxWidth = getMaxSize(imageMetadata.width, parameters.watermark.maxSize)
+        if (watermarkMetadata.width > maxWidth) {
+          watermark.resize(Math.round(getRatio(maxWidth, watermarkMetadata.width) * watermarkMetadata.width), null)
         }
       } else {
-        let maxHeight = getMaxSize(image.bitmap.height, parameters.watermark.maxSize)
-        if (watermark.bitmap.height > maxHeight) {
-          watermark.resize(
-            Math.round(getRatio(maxHeight, watermark.bitmap.height) * watermark.bitmap.height),
-            jimp.AUTO
-          )
+        let maxHeight = getMaxSize(imageMetadata.height, parameters.watermark.maxSize)
+        if (watermarkMetadata.height > maxHeight) {
+          watermark.resize(null, Math.round(getRatio(maxHeight, watermarkMetadata.height) * watermarkMetadata.height))
         }
       }
+      verboseLog(`Watermark resized`)
       return waterMark
     }
-    let getCompositeCoordinates = (processedWatermark, watermarkPosition, margin = 0) => {
+    let getCompositeCoordinates = (watermarkPosition, margin = 0) => {
       let xComposite
       let yComposite
-      let xOffset = processedWatermark.bitmap.width / 2
-      let yOffset = processedWatermark.bitmap.height / 2
+      let xOffset = watermarkMetadata.width / 2
+      let yOffset = watermarkMetadata.height / 2
+
       switch (watermarkPosition) {
-        case WATERMARK_POSITION.centerBottom:
-          xComposite = image.bitmap.width / 2 - xOffset
-          yComposite = image.bitmap.height - processedWatermark.bitmap.height - margin
+        case WATERMARK_POSITION.south:
+          xComposite = imageMetadata.width / 2 - xOffset
+          yComposite = imageMetadata.height - watermarkMetadata.height - margin
           break
-        case WATERMARK_POSITION.centerTop:
-          xComposite = image.bitmap.width / 2 - xOffset
+        case WATERMARK_POSITION.north:
+          xComposite = imageMetadata.width / 2 - xOffset
           yComposite = 0 + margin
           break
         case WATERMARK_POSITION.center:
-          xComposite = image.bitmap.width / 2 - xOffset
-          yComposite = image.bitmap.height / 2 - yOffset
-          break
-        case WATERMARK_POSITION.upperLeft:
+          xComposite = imageMetadata.width / 2 - xOffset
+          yComposite = imageMetadata.height / 2 - yOffset
+        break
+        case WATERMARK_POSITION.northwest:
           xComposite = 0 + margin
           yComposite = 0 + margin
           break
-        case WATERMARK_POSITION.centerLeft:
+        case WATERMARK_POSITION.west:
           xComposite = 0 + margin
-          yComposite = image.bitmap.height / 2 - yOffset
+          yComposite = imageMetadata.height / 2 - yOffset
           break
-        case WATERMARK_POSITION.downLeft:
+        case WATERMARK_POSITION.southwest:
           xComposite = 0 + margin
-          yComposite = image.bitmap.height - processedWatermark.bitmap.height - margin
+          yComposite = imageMetadata.height - watermarkMetadata.height - margin
           break
-        case WATERMARK_POSITION.upperRight:
+        case WATERMARK_POSITION.northeast:
           yComposite = 0 + margin
-          xComposite = image.bitmap.width - processedWatermark.bitmap.width - margin
+          xComposite = imageMetadata.width - watermarkMetadata.width - margin
           break
-        case WATERMARK_POSITION.centerRight:
-          yComposite = image.bitmap.height / 2 - yOffset
-          xComposite = image.bitmap.width - processedWatermark.bitmap.width - margin
+        case WATERMARK_POSITION.east:
+          yComposite = imageMetadata.height / 2 - yOffset
+          xComposite = imageMetadata.width - watermarkMetadata.width - margin
           break
-        case WATERMARK_POSITION.downRigth:
-          yComposite = image.bitmap.height - processedWatermark.bitmap.height - margin
-          xComposite = image.bitmap.width - processedWatermark.bitmap.width - margin
+        case WATERMARK_POSITION.southeast:
+          yComposite = imageMetadata.height - watermarkMetadata.height - margin
+          xComposite = imageMetadata.width - watermarkMetadata.width - margin
           break
       }
-      return [xComposite, yComposite]
+      verboseLog(xOffset,yOffset,xComposite,yComposite)
+      return [Math.round(xComposite), Math.round(yComposite)]
     }
-    let waterMark = await jimp.read(parameters.watermark.filePath)
+    imageMetadata = await image.metadata()
+    let waterMark = await sharp(parameters.watermark.filePath)
+    watermarkMetadata = await waterMark.metadata()
     if (parameters.watermark.maxSize !== -1) {
       waterMark = processWatermarkResize(waterMark)
     }
+    watermarkMetadata = await sharp(await waterMark.toBuffer()).metadata()
     let waterMarkCoordinates = getCompositeCoordinates(
-      waterMark,
       parameters.watermark.position,
       parameters.watermark.margin
     )
     if (verbose) {
-      log(`xComposite:${waterMarkCoordinates[0]}, yComposite:${waterMarkCoordinates[1]}`)
+      verboseLog(`xComposite:${waterMarkCoordinates[0]}, yComposite:${waterMarkCoordinates[1]}`)
     }
-    image.composite(waterMark, waterMarkCoordinates[0], waterMarkCoordinates[1])
+    image.overlayWith(await waterMark.toBuffer(), { left: waterMarkCoordinates[0], top: waterMarkCoordinates[1] })
   }
 
-  let imageProcess = (file, enc, cb) => {
+  let imageProcess = async (file, enc, cb) => {
     if (file.isNull()) {
       if (verbose) {
-        log('File is null. Skipping it')
+        verboseLog('File is null. Skipping it')
       }
       cb(null, file)
       return
@@ -163,27 +169,24 @@ module.exports = function(param) {
     }
     if (!supportedExtensions.includes(extensionFile(file.path))) {
       if (verbose) {
-        log('File type is not supported. Skipping it.')
+        verboseLog('File type is not supported. Skipping it.')
       }
       cb(null, file)
       return
     }
-
-    jimp.read(file.contents, async (err, image) => {
-      if (err) {
-        throw new PluginError(TASK_NAME, err)
+    let img = sharp(file.path)
+    if (parameters.keepMetadata) {
+      img.withMetadata()
+    }
+    if (parameters.watermark) {
+      if (!fs.existsSync(parameters.watermark.filePath)) {
+        throw new PluginError(TASK_NAME, 'Watermark file not found!')
       }
-      if (parameters.watermark) {
-        if (!fs.existsSync(parameters.watermark.filePath)) {
-          throw new PluginError(TASK_NAME, 'Watermark file not found!')
-        }
-        await processWatermark(image, parameters)
-      }
-
-      image.getBuffer(getJimpFormat(file.path), (err, buffer) => {
-        file.contents = buffer
-        cb(null, file)
-      })
+      await processWatermark(img, parameters)
+    }
+    img.toBuffer().then((data, info) => {
+      file.contents = data
+      cb(null, file)
     })
   }
   return through.obj(imageProcess)
