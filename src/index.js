@@ -41,7 +41,7 @@ module.exports = function(param) {
   let parameters = {}
   parameters.watermark = param.watermark || false
   parameters.optimize = param.optimize || false
-
+  parameters.watermark.maxSize = param.watermark.maxSize || -1
   verboseLog('Parameters', parameters)
 
   let extensionFile = filePath => {
@@ -112,7 +112,7 @@ module.exports = function(param) {
           yComposite = 0 + margin
           break
         case WATERMARK_POSITION.centerLeft:
-          xComposite = 0+ margin
+          xComposite = 0 + margin
           yComposite = image.bitmap.height / 2 - yOffset
           break
         case WATERMARK_POSITION.downLeft:
@@ -135,7 +135,9 @@ module.exports = function(param) {
       return [xComposite, yComposite]
     }
     let waterMark = await jimp.read(parameters.watermark.filePath)
-    waterMark = processWatermarkResize(waterMark)
+    if (parameters.watermark.maxSize !== -1) {
+      waterMark = processWatermarkResize(waterMark)
+    }
     let waterMarkCoordinates = getCompositeCoordinates(
       waterMark,
       parameters.watermark.position,
