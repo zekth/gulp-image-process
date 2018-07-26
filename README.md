@@ -18,7 +18,7 @@ const path = require('path')
 
 gulp.task('images', () => {
   let imageFolder = path.resolve('test', 'ressources', 'src', '*.jpg')
-  gulp
+  return gulp
     .src(imageFolder)
     .pipe(
       imageProcess({
