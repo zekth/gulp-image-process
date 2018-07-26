@@ -8,7 +8,7 @@ const imageProcess = require('./src/index')
 const gulp = require('gulp')
 const path = require('path')
 
-gulp.task('watermark', () => {
+gulp.task('images', () => {
   let imageFolder = path.resolve('test', 'ressources', 'src', '*.jpg')
   gulp
     .src(imageFolder)
@@ -17,12 +17,13 @@ gulp.task('watermark', () => {
         verboseLogging: true,
         watermark: {
           filePath: 'test/ressources/src/watermark.png',
-          position: 'centerBottom',
+          position: 'north',
           maxSize: 20,
           margin: 30
         }
       })
-    ).pipe(gulp.dest(path.resolve('test', 'result')))
+    )
+    .pipe(gulp.dest(path.resolve('test', 'result')))
 })
 ```
 
