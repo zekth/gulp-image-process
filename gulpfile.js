@@ -9,6 +9,7 @@ gulp.task('images', () => {
     .pipe(
       imageProcess({
         quality:100,
+        progressive:false,
         verboseLogging: true,
         width:200,
         heigth:200,

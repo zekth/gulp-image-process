@@ -23,6 +23,7 @@ gulp.task('images', () => {
     .pipe(
       imageProcess({
         verboseLogging: true,
+        progressive:true,
         width:200,
         heigth:200,
         keepRatio:false,
@@ -59,6 +60,12 @@ Type: `Boolean`<br>
 Default: `false`
 
 Keep the EXIF file on the output file.
+
+### options.progressive
+Type: `Boolean`<br>
+Default: `false`
+
+Output using progressive scan. Only available for jpeg output.
 
 ### options.ignoreRatio
 Type: `Boolean`<br>
