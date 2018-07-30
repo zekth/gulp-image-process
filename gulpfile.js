@@ -11,16 +11,13 @@ gulp.task('images', () => {
         quality:100,
         progressive:false,
         verboseLogging: true,
-        width:200,
-        heigth:200,
-        ignoreRatio:false,
+        multipleResize: [150,300],
         watermark: {
           filePath: 'test/ressources/src/watermark.png',
           position: 'north',
-          maxSize: 20,
-          margin: 30
+          margin: 50
         }
       })
     )
     .pipe(gulp.dest(path.resolve('test', 'result')))
-})
+  })

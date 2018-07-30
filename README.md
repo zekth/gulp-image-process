@@ -26,7 +26,8 @@ gulp.task('images', () => {
         progressive:true,
         width:200,
         heigth:200,
-        keepRatio:false,
+        ignoreRatio:false,
+        multipleResize: [150,300],
         watermark: {
           filePath: 'test/ressources/src/watermark.png',
           position: 'north',
@@ -54,6 +55,12 @@ Type: `Boolean`<br>
 Default: `false`
 
 Enable the verbose logging.
+
+#### options.multipleResize
+Type: `Array<Number>`<br>
+Default: `false`
+
+Will perform multiple resize of the values passed in parameter. Resizes are made on the rendered images, for example it will resize the image with the watermark.
 
 ### options.keepMetadata
 Type: `Boolean`<br>
@@ -108,7 +115,7 @@ Little reminder:
 northwest   north     northeast
         \     |     /
           \   |   /
-east   ---- center ----   west
+west   ---- center ----   east
           /   |   \
         /     |     \
 southwest   south     southeast
@@ -130,6 +137,7 @@ Margin of the watermark from the border of the image. Applied to all coordinates
 
 ## TODO
 
+- Unit tests :v
 - WebP support
 - Optimization prompt (diff input / ouput size)
 
