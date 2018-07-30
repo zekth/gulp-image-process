@@ -10,6 +10,7 @@ gulp.task('images', () => {
       imageProcess({
         quality:100,
         progressive:false,
+        output: 'webp',
         verboseLogging: true,
         multipleResize: [150,300],
         watermark: {

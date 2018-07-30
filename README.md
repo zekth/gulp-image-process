@@ -26,6 +26,7 @@ gulp.task('images', () => {
         progressive:true,
         width:200,
         heigth:200,
+        output: 'webp',
         ignoreRatio:false,
         multipleResize: [150,300],
         watermark: {
@@ -43,6 +44,12 @@ gulp.task('images', () => {
 ## API
 
 ### options
+
+##### options.output
+Type: `String`<br>
+Default: `false`<br>
+
+Force the output format. Possible values `jpeg|png|webp`
 
 ##### options.quality
 Type: `Number`<br>
@@ -138,7 +145,6 @@ Margin of the watermark from the border of the image. Applied to all coordinates
 ## TODO
 
 - Unit tests :v
-- WebP support
 - Optimization prompt (diff input / ouput size)
 
 ## License
