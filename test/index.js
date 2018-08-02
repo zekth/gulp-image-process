@@ -21,7 +21,7 @@ let comparer = function(pathExpected, pathResult) {
     imageA: fs.readFileSync(pathExpected),
     imageB: fs.readFileSync(pathResult),
     thresholdType: Rembrandt.THRESHOLD_PERCENT,
-    maxThreshold: 0.01,
+    maxThreshold: 0.001,
     maxOffset: 0
   })
 }
@@ -366,6 +366,7 @@ describe('Resize', function() {
           done('File is missing')
         } else {
           let r = await comparer(path.join(expectedFolder, '1-300.jpg'), path.join(resultFolder, '1.jpg')).compare()
+          console.log(r)
           if (!r.passed) {
             done('expected image not passed')
           } else {
@@ -402,6 +403,252 @@ describe('Resize', function() {
             path.join(resultFolder, '1-300.jpg')
           ).compare()
           if (!r.passed || !r150.passed || !r300.passed) {
+            done('expected image not passed')
+          } else {
+            done()
+          }
+        }
+      })
+  })
+})
+
+describe('Watermark', function() {
+  it('NORTH', function(done) {
+    gulp
+      .src(path.join(ressourceFolder, '1.jpg'))
+      .pipe(
+        imageProcess({
+          quality: 100,
+          watermark: {
+            filePath: path.join(ressourceFolder, 'watermark.png'),
+            position: 'north',
+            maxSize: 20
+          }
+        })
+      )
+      .pipe(gulp.dest(resultFolder))
+      .on('end', async function() {
+        if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
+          done('File is missing')
+        } else {
+          let r = await comparer(path.join(expectedFolder, '1-north.jpg'), path.join(resultFolder, '1.jpg')).compare()
+          if (!r.passed) {
+            done('expected image not passed')
+          } else {
+            done()
+          }
+        }
+      })
+  })
+  it('SOUTH', function(done) {
+    gulp
+      .src(path.join(ressourceFolder, '1.jpg'))
+      .pipe(
+        imageProcess({
+          quality: 100,
+          watermark: {
+            filePath: path.join(ressourceFolder, 'watermark.png'),
+            position: 'south',
+            maxSize: 20
+          }
+        })
+      )
+      .pipe(gulp.dest(resultFolder))
+      .on('end', async function() {
+        if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
+          done('File is missing')
+        } else {
+          let r = await comparer(path.join(expectedFolder, '1-south.jpg'), path.join(resultFolder, '1.jpg')).compare()
+          if (!r.passed) {
+            done('expected image not passed')
+          } else {
+            done()
+          }
+        }
+      })
+  })
+  it('CENTER', function(done) {
+    gulp
+      .src(path.join(ressourceFolder, '1.jpg'))
+      .pipe(
+        imageProcess({
+          quality: 100,
+          watermark: {
+            filePath: path.join(ressourceFolder, 'watermark.png'),
+            position: 'center',
+            maxSize: 20
+          }
+        })
+      )
+      .pipe(gulp.dest(resultFolder))
+      .on('end', async function() {
+        if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
+          done('File is missing')
+        } else {
+          let r = await comparer(path.join(expectedFolder, '1-center.jpg'), path.join(resultFolder, '1.jpg')).compare()
+          if (!r.passed) {
+            done('expected image not passed')
+          } else {
+            done()
+          }
+        }
+      })
+  })
+  it('WEST', function(done) {
+    gulp
+      .src(path.join(ressourceFolder, '1.jpg'))
+      .pipe(
+        imageProcess({
+          quality: 100,
+          watermark: {
+            filePath: path.join(ressourceFolder, 'watermark.png'),
+            position: 'west',
+            maxSize: 20
+          }
+        })
+      )
+      .pipe(gulp.dest(resultFolder))
+      .on('end', async function() {
+        if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
+          done('File is missing')
+        } else {
+          let r = await comparer(path.join(expectedFolder, '1-west.jpg'), path.join(resultFolder, '1.jpg')).compare()
+          if (!r.passed) {
+            done('expected image not passed')
+          } else {
+            done()
+          }
+        }
+      })
+  })
+  it('EAST', function(done) {
+    gulp
+      .src(path.join(ressourceFolder, '1.jpg'))
+      .pipe(
+        imageProcess({
+          quality: 100,
+          watermark: {
+            filePath: path.join(ressourceFolder, 'watermark.png'),
+            position: 'east',
+            maxSize: 20
+          }
+        })
+      )
+      .pipe(gulp.dest(resultFolder))
+      .on('end', async function() {
+        if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
+          done('File is missing')
+        } else {
+          let r = await comparer(path.join(expectedFolder, '1-east.jpg'), path.join(resultFolder, '1.jpg')).compare()
+          if (!r.passed) {
+            done('expected image not passed')
+          } else {
+            done()
+          }
+        }
+      })
+  })
+  it('NORTHWEST', function(done) {
+    gulp
+      .src(path.join(ressourceFolder, '1.jpg'))
+      .pipe(
+        imageProcess({
+          quality: 100,
+          watermark: {
+            filePath: path.join(ressourceFolder, 'watermark.png'),
+            position: 'northwest',
+            maxSize: 20
+          }
+        })
+      )
+      .pipe(gulp.dest(resultFolder))
+      .on('end', async function() {
+        if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
+          done('File is missing')
+        } else {
+          let r = await comparer(path.join(expectedFolder, '1-northwest.jpg'), path.join(resultFolder, '1.jpg')).compare()
+          if (!r.passed) {
+            done('expected image not passed')
+          } else {
+            done()
+          }
+        }
+      })
+  })
+  it('NORTHEAST', function(done) {
+    gulp
+      .src(path.join(ressourceFolder, '1.jpg'))
+      .pipe(
+        imageProcess({
+          quality: 100,
+          watermark: {
+            filePath: path.join(ressourceFolder, 'watermark.png'),
+            position: 'northeast',
+            maxSize: 20
+          }
+        })
+      )
+      .pipe(gulp.dest(resultFolder))
+      .on('end', async function() {
+        if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
+          done('File is missing')
+        } else {
+          let r = await comparer(path.join(expectedFolder, '1-northeast.jpg'), path.join(resultFolder, '1.jpg')).compare()
+          if (!r.passed) {
+            done('expected image not passed')
+          } else {
+            done()
+          }
+        }
+      })
+  })
+  it('SOUTHWEST', function(done) {
+    gulp
+      .src(path.join(ressourceFolder, '1.jpg'))
+      .pipe(
+        imageProcess({
+          quality: 100,
+          watermark: {
+            filePath: path.join(ressourceFolder, 'watermark.png'),
+            position: 'southwest',
+            maxSize: 20
+          }
+        })
+      )
+      .pipe(gulp.dest(resultFolder))
+      .on('end', async function() {
+        if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
+          done('File is missing')
+        } else {
+          let r = await comparer(path.join(expectedFolder, '1-southwest.jpg'), path.join(resultFolder, '1.jpg')).compare()
+          if (!r.passed) {
+            done('expected image not passed')
+          } else {
+            done()
+          }
+        }
+      })
+  })
+  it('SOUTHEAST', function(done) {
+    gulp
+      .src(path.join(ressourceFolder, '1.jpg'))
+      .pipe(
+        imageProcess({
+          quality: 100,
+          watermark: {
+            filePath: path.join(ressourceFolder, 'watermark.png'),
+            position: 'southeast',
+            maxSize: 20
+          }
+        })
+      )
+      .pipe(gulp.dest(resultFolder))
+      .on('end', async function() {
+        if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
+          done('File is missing')
+        } else {
+          let r = await comparer(path.join(expectedFolder, '1-southeast.jpg'), path.join(resultFolder, '1.jpg')).compare()
+          if (!r.passed) {
             done('expected image not passed')
           } else {
             done()
