@@ -12,11 +12,11 @@ const Vinyl = require('vinyl')
 
 const Readable = require('stream').Readable
 
-let resultFolder = 'test/ressources/result'
-let expectedFolder = 'test/ressources/expected'
-let ressourceFolder = 'test/ressources/src'
+let resultFolder = path.resolve('test/ressources/result')
+let expectedFolder = path.resolve('test/ressources/expected')
+let ressourceFolder = path.resolve('test/ressources/src')
 
-let comparer = function(pathExpected, pathResult) {
+let comparer = function (pathExpected, pathResult) {
   return new Rembrandt({
     imageA: fs.readFileSync(pathExpected),
     imageB: fs.readFileSync(pathResult),
@@ -26,24 +26,28 @@ let comparer = function(pathExpected, pathResult) {
   })
 }
 
-beforeEach(function() {
-  for (const file of fs.readdirSync(resultFolder)) {
-    fs.unlinkSync(path.join(resultFolder, file))
+beforeEach(function () {
+  if (fs.existsSync(resultFolder)) {
+    for (const file of fs.readdirSync(resultFolder)) {
+      fs.unlinkSync(path.join(resultFolder, file))
+    }
   }
 })
-afterEach(function() {
-  for (const file of fs.readdirSync(resultFolder)) {
-    fs.unlinkSync(path.join(resultFolder, file))
+afterEach(function () {
+  if (fs.existsSync(resultFolder)) {
+    for (const file of fs.readdirSync(resultFolder)) {
+      fs.unlinkSync(path.join(resultFolder, file))
+    }
   }
 })
-describe('Error Handling', function() {
-  it('Should skip if file type no supported', function(done) {
+describe('Error Handling', function () {
+  it('Should skip if file type no supported', function (done) {
     gulp
       .src(path.join(ressourceFolder, 'foo.txt'))
       .pipe(imageProcess({ quality: 100 }))
       .pipe(gulp.dest(resultFolder))
-      .on('end', function() {
-        if (fs.readdirSync(resultFolder).length !== 0) {
+      .on('end', function () {
+        if (fs.exists(resultFolder) && fs.readdirSync(resultFolder).length !== 0) {
           console.log(fs.readdirSync(resultFolder))
           done('Unsupported file has been processed')
         } else {
@@ -70,21 +74,21 @@ describe('Error Handling', function() {
   //   }
   // })
 })
-describe('Simple Manipulations', function() {
-  it('Should throw an error with no parameters', function(done) {
+describe('Simple Manipulations', function () {
+  it('Should throw an error with no parameters', function (done) {
     try {
       gulp
         .src(path.join(ressourceFolder, '1.jpg'))
         .pipe(imageProcess())
         .pipe(gulp.dest(resultFolder))
-        .on('end', function() {
+        .on('end', function () {
           done('No error has been thrown')
         })
     } catch (e) {
       done()
     }
   })
-  it('Should copy the image', function(done) {
+  it('Should copy the image', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -93,12 +97,12 @@ describe('Simple Manipulations', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', function() {
+      .on('end', function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is not copied')
         }
         let r = comparer(path.join(expectedFolder, '1.jpg'), path.join(resultFolder, '1.jpg'))
-        r.compare().then(function(result) {
+        r.compare().then(function (result) {
           if (result.passed) {
             done()
           } else {
@@ -115,7 +119,7 @@ describe('Simple Manipulations', function() {
         })
       })
   })
-  it('Should handle an innapropriate quality value over limit', function(done) {
+  it('Should handle an innapropriate quality value over limit', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -124,12 +128,12 @@ describe('Simple Manipulations', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', function() {
+      .on('end', function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is not copied')
         }
         let r = comparer(path.join(expectedFolder, '1.jpg'), path.join(resultFolder, '1.jpg'))
-        r.compare().then(function(result) {
+        r.compare().then(function (result) {
           if (result.passed) {
             done()
           } else {
@@ -146,7 +150,7 @@ describe('Simple Manipulations', function() {
         })
       })
   })
-  it('Should handle an innapropriate quality value. Negative one.', function(done) {
+  it('Should handle an innapropriate quality value. Negative one.', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -155,12 +159,12 @@ describe('Simple Manipulations', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', function() {
+      .on('end', function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is not copied')
         }
         let r = comparer(path.join(expectedFolder, '1-quality-0.jpg'), path.join(resultFolder, '1.jpg'))
-        r.compare().then(function(result) {
+        r.compare().then(function (result) {
           if (result.passed) {
             done()
           } else {
@@ -177,7 +181,7 @@ describe('Simple Manipulations', function() {
         })
       })
   })
-  it('Should copy the image and call verbose logging', function(done) {
+  it('Should copy the image and call verbose logging', function (done) {
     let verboseStub = sinon.spy(Logger.prototype, 'verboseLog')
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
@@ -188,12 +192,12 @@ describe('Simple Manipulations', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', function() {
+      .on('end', function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is not copied')
         }
         let r = comparer(path.join(expectedFolder, '1.jpg'), path.join(resultFolder, '1.jpg'))
-        r.compare().then(function(result) {
+        r.compare().then(function (result) {
           if (!verboseStub.called) {
             done('verbose log has no been called')
           }
@@ -215,8 +219,8 @@ describe('Simple Manipulations', function() {
   })
 })
 
-describe('Output', function() {
-  it('It should force the jpg output', function(done) {
+describe('Output', function () {
+  it('It should force the jpg output', function (done) {
     gulp
       .src(path.join(ressourceFolder, 'watermark.png'))
       .pipe(
@@ -226,12 +230,12 @@ describe('Output', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', function() {
+      .on('end', function () {
         if (!fs.existsSync(path.join(resultFolder, 'watermark.jpeg'))) {
           done('File is not generated')
         } else {
           let r = comparer(path.join(expectedFolder, 'png-to-jpg.jpeg'), path.join(resultFolder, 'watermark.jpeg'))
-          r.compare().then(function(result) {
+          r.compare().then(function (result) {
             if (result.passed) {
               done()
             } else {
@@ -249,7 +253,7 @@ describe('Output', function() {
         }
       })
   })
-  it('It should force the jpg output with jpeg input', function(done) {
+  it('It should force the jpg output with jpeg input', function (done) {
     gulp
       .src(path.join(ressourceFolder, 'watermark.png'))
       .pipe(
@@ -259,12 +263,12 @@ describe('Output', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', function() {
+      .on('end', function () {
         if (!fs.existsSync(path.join(resultFolder, 'watermark.jpeg'))) {
           done('File is not generated')
         } else {
           let r = comparer(path.join(expectedFolder, 'png-to-jpg.jpeg'), path.join(resultFolder, 'watermark.jpeg'))
-          r.compare().then(function(result) {
+          r.compare().then(function (result) {
             if (result.passed) {
               done()
             } else {
@@ -282,7 +286,7 @@ describe('Output', function() {
         }
       })
   })
-  it('It should force the png output', function(done) {
+  it('It should force the png output', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -292,12 +296,12 @@ describe('Output', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', function() {
+      .on('end', function () {
         if (!fs.existsSync(path.join(resultFolder, '1.png'))) {
           done('File is not generated')
         } else {
           let r = comparer(path.join(expectedFolder, '1.png'), path.join(resultFolder, '1.png'))
-          r.compare().then(function(result) {
+          r.compare().then(function (result) {
             if (result.passed) {
               done()
             } else {
@@ -315,7 +319,7 @@ describe('Output', function() {
         }
       })
   })
-  it('It should force the webp output', function(done) {
+  it('It should force the webp output', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -325,12 +329,12 @@ describe('Output', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', function() {
+      .on('end', function () {
         if (!fs.existsSync(path.join(resultFolder, '1.webp'))) {
           done('File is not generated')
         } else {
           let r = comparer(path.join(expectedFolder, '1.webp'), path.join(resultFolder, '1.webp'))
-          r.compare().then(function(result) {
+          r.compare().then(function (result) {
             if (result.passed) {
               done()
             } else {
@@ -350,8 +354,8 @@ describe('Output', function() {
   })
 })
 
-describe('Resize', function() {
-  it('Should do simple resize', function(done) {
+describe('Resize', function () {
+  it('Should do simple resize', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -361,13 +365,13 @@ describe('Resize', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', async function() {
+      .on('end', async function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is missing')
         } else {
           let r = await comparer(path.join(expectedFolder, '1-300.jpg'), path.join(resultFolder, '1.jpg')).compare()
-          console.log(r)
           if (!r.passed) {
+            console.log(r)
             done('expected image not passed')
           } else {
             done()
@@ -375,7 +379,7 @@ describe('Resize', function() {
         }
       })
   })
-  it('Should do multiple resize', function(done) {
+  it('Should do multiple resize', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -385,7 +389,7 @@ describe('Resize', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', async function() {
+      .on('end', async function () {
         if (
           !fs.existsSync(path.join(resultFolder, '1-150.jpg')) ||
           !fs.existsSync(path.join(resultFolder, '1-300.jpg')) ||
@@ -412,8 +416,8 @@ describe('Resize', function() {
   })
 })
 
-describe('Watermark', function() {
-  it('NORTH', function(done) {
+describe('Watermark', function () {
+  it('NORTH', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -427,7 +431,7 @@ describe('Watermark', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', async function() {
+      .on('end', async function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is missing')
         } else {
@@ -440,7 +444,7 @@ describe('Watermark', function() {
         }
       })
   })
-  it('SOUTH', function(done) {
+  it('SOUTH', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -454,7 +458,7 @@ describe('Watermark', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', async function() {
+      .on('end', async function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is missing')
         } else {
@@ -467,7 +471,7 @@ describe('Watermark', function() {
         }
       })
   })
-  it('CENTER', function(done) {
+  it('CENTER', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -481,7 +485,7 @@ describe('Watermark', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', async function() {
+      .on('end', async function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is missing')
         } else {
@@ -494,7 +498,7 @@ describe('Watermark', function() {
         }
       })
   })
-  it('WEST', function(done) {
+  it('WEST', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -508,7 +512,7 @@ describe('Watermark', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', async function() {
+      .on('end', async function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is missing')
         } else {
@@ -521,7 +525,7 @@ describe('Watermark', function() {
         }
       })
   })
-  it('EAST', function(done) {
+  it('EAST', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -535,7 +539,7 @@ describe('Watermark', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', async function() {
+      .on('end', async function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is missing')
         } else {
@@ -548,7 +552,7 @@ describe('Watermark', function() {
         }
       })
   })
-  it('NORTHWEST', function(done) {
+  it('NORTHWEST', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -562,7 +566,7 @@ describe('Watermark', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', async function() {
+      .on('end', async function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is missing')
         } else {
@@ -575,7 +579,7 @@ describe('Watermark', function() {
         }
       })
   })
-  it('NORTHEAST', function(done) {
+  it('NORTHEAST', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -589,7 +593,7 @@ describe('Watermark', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', async function() {
+      .on('end', async function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is missing')
         } else {
@@ -602,7 +606,7 @@ describe('Watermark', function() {
         }
       })
   })
-  it('SOUTHWEST', function(done) {
+  it('SOUTHWEST', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -616,7 +620,7 @@ describe('Watermark', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', async function() {
+      .on('end', async function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is missing')
         } else {
@@ -629,7 +633,7 @@ describe('Watermark', function() {
         }
       })
   })
-  it('SOUTHEAST', function(done) {
+  it('SOUTHEAST', function (done) {
     gulp
       .src(path.join(ressourceFolder, '1.jpg'))
       .pipe(
@@ -643,7 +647,7 @@ describe('Watermark', function() {
         })
       )
       .pipe(gulp.dest(resultFolder))
-      .on('end', async function() {
+      .on('end', async function () {
         if (!fs.existsSync(path.join(resultFolder, '1.jpg'))) {
           done('File is missing')
         } else {
